@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TOP Library Project</title>
+  <meta charset="UTF-8"/>
+
+  <link rel="stylesheet" type="text/css" href="styles/reset.css">
+    <link rel="stylesheet" type="text/css" href="styles/main.css">
+</head>
+<body>
+
+<header>
+    <h1>My library</h1>
+    <button id='create-new'>Add book</button>
+</header>
+<form id='new-book-form'>
+    <label for="title">Book title:</label>
+    <input type="text" id="title" name="title" required><br>
+    <label for="Author">Author:</label>
+    <input type="text" id="author" name="author" required><br>
+    <label for="pages"># of pages:</label>
+    <input type="text" id="pages" name="pages" required><br>
+    <label for="read">Read by me:</label>
+    <div>
+    <input type="radio" id='have-read' name='read' checked='checked'>
+    <label for="have-read">Yes</label>
+    <input type="radio" id='have-not-read' name='read'>
+    <label for="have-not-read">No</label><br>
+    </div>
+    <input type="submit" id='submit'>
+</form>
+
+
+  <!-- JS below here -->
+  <script>
+
+
+//define base page elements
+const browserWindow = document.querySelector('body');
+const bookList = document.createElement('div');
+bookList.setAttribute('id', 'bookList');
+const createNew = document.getElementById('create-new');
+const bookForm = document.getElementById('new-book-form')
+const submitBook = document.getElementById('submit');
+bookForm.style.display = 'none';
+browserWindow.appendChild(bookList);
+
+//add some default data
+let myLibrary = [
+    {
+        title: 'The Philosopher\'s Stone',
+        author: 'J.K. Rowling',
+        pages: 223,
+        read: true
+    },
+
+    {
+        title: 'The Chamber of Secrets',
+        author: 'J.K. Rowling',
+        pages: 251,
+        read: true
+    },
+
+    {
+        title: 'The Prisoner of Azkaban',
+        author: 'J.K. Rowling',
+        pages: 317,
+        read: true
+    },
+
+    {
+        title: 'The Goblet of Fire',
+        author: 'J.K. Rowling',
+        pages: 636,
+        read: true
+    },
+
+    {
+        title: 'The Order of the Phoenix',
+        author: 'J.K. Rowling',
+        pages: 766,
+        read: false
+    },
+
+    {
+        title: 'The Half-Blood Prince',
+        author: 'J.K. Rowling',
+        pages: 607,
+        read: false
+    },
+
+    {
+        title: 'The Deathly Hallows',
+        author: 'J.K. Rowling',
+        pages: 607,
+        read: false
+    }
+];
+
+function pageLoad() {
+    render();
+}
+
+function Book (title, author, pages, read) {
+    this.title = title
+    this.author = author
+    this.pages = pages
+    this.read = read
+};
+
+submitBook.addEventListener('click', (e) => {
+    let title = document.getElementById('title').value;
+    let author = document.getElementById('author').value;
+    let pages = document.getElementById('pages').value;
+    let read = checkRadios();
+    if (!title || !author || !pages) {
+        alert('All fields required')
+    } else {
+        addBookToLibrary(title, author, pages, read); 
+        e.preventDefault();
+        document.getElementById('new-book-form').reset();
+    } 
+});
+
+function addBookToLibrary(title, author, pages, read) {
+    let newBook = new Book(title, author, pages, read);
+    myLibrary.push(newBook);
+    render();
+};
+
+function render() {
+    bookList.innerHTML = '';
+    for (i = 0; i < myLibrary.length; i++) {
+        //create card elements
+        const newBook = document.createElement('div');
+        const bookInfo = document.createElement('info');
+        const bookTitle = document.createElement('div');
+        const bookAuthor = document.createElement('div');
+        const bookPages = document.createElement('div');
+        const bookRead = document.createElement('div');
+        const bookReadCheck = document.createElement('input');
+        bookReadCheck.setAttribute('type', 'checkbox');
+        const bookReadLabel = document.createElement('label');
+        const bookDelete = document.createElement('button');
+        
+        //set classes and ids
+        newBook.classList.add('bookCard');
+        newBook.setAttribute('data-position', i);
+        bookInfo.classList.add('bookInfo');
+        bookTitle.classList.add('bookTitle');
+        bookAuthor.classList.add('bookAuthor');
+        bookPages.classList.add('bookPages');
+        bookRead.classList.add('bookRead');
+        bookReadCheck.classList.add('bookReadCheck')
+        bookReadLabel.classList.add('bookReadLabel')
+        bookDelete.classList.add('bookDelete');
+        
+        //create card
+        bookList.appendChild(newBook);
+        newBook.appendChild(bookInfo);
+        bookInfo.appendChild(bookTitle);
+        bookInfo.appendChild(bookAuthor);
+        bookInfo.appendChild(bookPages);
+        newBook.appendChild(bookRead);
+        newBook.appendChild(bookDelete);
+        bookRead.appendChild(bookReadCheck);
+        bookRead.appendChild(bookReadLabel);
+        bookTitle.innerHTML = `${myLibrary[i].title}`;
+        bookAuthor.innerHTML = `By ${myLibrary[i].author}`;
+        bookPages.innerHTML = `${myLibrary[i].pages} pages`;
+        bookReadLabel.innerHTML = 'Read this';
+
+        //set read status
+        readCheckBox(myLibrary[i].read, bookReadCheck);
+
+        //delete book function
+        bookDelete.addEventListener('click', (e) => {
+            myLibrary.splice(newBook.dataset.position, 1);
+            render();
+        });
+
+        //change read status
+        bookReadCheck.addEventListener('click', (e) => {
+            updateReadStatus(myLibrary[newBook.dataset.position], bookReadCheck);
+            return;
+        });
+
+    }
+}
+
+//set checkbox initial state
+function readCheckBox(readStatus, bookReadCheck) {    
+    if (readStatus) {
+        bookReadCheck.setAttribute('checked', 'true');
+    }
+}
+
+// set read status initial state
+function checkRadios() {
+    const readRadio = document.getElementsByName('read');
+    let readStatus = true;
+    for(i = 0; i < readRadio.length; i++) {
+        if(readRadio[i].checked) {
+            readStatus = true;
+            return readStatus;
+        } else {
+            readStatus = false;
+            return readStatus;
+        }
+    }
+};  
+
+//toggle read status on and off
+function updateReadStatus(currentBook, bookReadCheck) {
+    if(bookReadCheck.checked) {
+        currentBook.read = true;
+    } else {
+        currentBook.read = false;
+    }
+};
+
+//show hide new book form
+createNew.addEventListener('click', (e) => {
+        if (bookForm.style.display === 'none') {
+            bookForm.style.display = 'inline-grid';
+        } else {
+            bookForm.style.display = 'none';
+  }
+});
+
+pageLoad();
+
+//addBookToLibrary();
+
+// const theHobbit = new Book('The Hobbit', 'J.R.R. Tolkien', 295, 'not read yet');
+// console.log(theHobbit.info());
+
+  </script>
+</body>
+</html>
